@@ -1,5 +1,8 @@
 import { Request, Response } from 'express'
 import productModel from '../models/productModel'
+const { promisify } = require('util')
+import fs from 'fs'
+const unlink = promisify(fs.unlink)
 
 async function getAll(req: Request, res: Response) {
   try {
@@ -16,6 +19,7 @@ async function ProductRegister(req: Request, res: Response) {
 
     const [name] = image.split('.')
     const filename = `${name}.jpg`
+
     await productModel.create({
       title: req.body.title,
       price: req.body.price,
@@ -46,11 +50,23 @@ async function Update(req: Request, res: Response) {
 
 async function deleteOne(req: Request, res: Response) {
   try {
-    await productModel.findByIdAndRemove(req.params.id)
+    const { id } = req.params
 
-    return res.status(200).send({ message: 'Product deleted with succes!!' })
+    const imagem = await productModel.findById(id)
+
+    console.log(imagem.image)
+
+    console.log('entrou')
+    await productModel.findByIdAndDelete(id)
+
+    fs.unlink(`uploads/${imagem.image}`, (err) => {
+      if (err) throw err
+      console.log('uploads/file.txt was deleted')
+    })
+
+    return res.status(201).send({ message: 'Product Deleted with success!' })
   } catch (error) {
-    return res.status(200).send({ error })
+    return res.status(400).send({ Mensagem: 'All cagado!!', error })
   }
 }
 
