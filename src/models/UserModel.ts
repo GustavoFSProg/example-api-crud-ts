@@ -1,5 +1,4 @@
 import { model, Schema } from 'mongoose'
-import { Request, Response } from 'express'
 
 const schema = new Schema({
   name: {
